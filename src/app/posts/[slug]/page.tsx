@@ -2,20 +2,13 @@ import Layout from "@/components/Layout";
 import ArticleCard from "@/components/ArticleCard";
 import Link from "next/link";
 import { Calendar, ArrowLeft, ArrowUpRight } from "lucide-react";
-import { getPostSlugs, getPostBySlug, getRelatedPosts } from "@/lib/posts";
 import { remark } from "remark";
 import remarkHtml from "remark-html";
 import ShareButton from "@/components/ShareButton";
+import { supabase } from "@/lib/supabase";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
-}
-
-export async function generateStaticParams() {
-  const slugs = getPostSlugs();
-  return slugs.map((slug) => ({
-    slug: slug.replace(/\.md$/, ""),
-  }));
 }
 
 async function getPostContentHtml(content: string): Promise<string> {
@@ -41,11 +34,39 @@ const categoryLabels: Record<string, string> = {
 
 export default async function PostPage({ params }: PageProps) {
   const { slug } = await params;
-  // Decode URL-encoded slug and match against actual filenames
   const decodedSlug = decodeURIComponent(slug);
-  const post = getPostBySlug(decodedSlug);
-  const contentHtml = await getPostContentHtml(post.content);
-  const relatedPosts = getRelatedPosts(decodedSlug, post.category);
+
+  // Fetch post from Supabase
+  const { data: post, error } = await supabase
+    .from("articles")
+    .select("*")
+    .eq("slug", decodedSlug)
+    .single();
+
+  if (error || !post) {
+    return (
+      <Layout>
+        <div className="max-w-3xl mx-auto px-6 py-20 text-center">
+          <h1 className="text-2xl font-semibold text-white mb-4">文章不存在</h1>
+          <Link href="/" className="btn-primary">
+            返回首页
+          </Link>
+        </div>
+      </Layout>
+    );
+  }
+
+  const contentHtml = await getPostContentHtml(post.content || "");
+
+  // Fetch related posts
+  const { data: relatedData } = await supabase
+    .from("articles")
+    .select("slug, title, date, category, source_url, description, cover_image, is_featured")
+    .eq("category", post.category)
+    .neq("slug", decodedSlug)
+    .limit(3);
+
+  const relatedPosts = relatedData || [];
 
   const formattedDate = new Date(post.date).toLocaleDateString("zh-CN", {
     year: "numeric",

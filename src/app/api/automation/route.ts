@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-const fs = require("fs");
-const path = require("path");
-const matter = require("gray-matter");
-
-const postsDir = path.join(process.cwd(), "content/posts");
+import { supabase } from "@/lib/supabase";
 
 interface LLMConfig {
   provider: string;
@@ -21,30 +17,6 @@ interface DataSource {
   enabled: boolean;
 }
 
-// Simple test endpoint
-export async function GET() {
-  try {
-    const testUrl = "https://feeds.bbci.co.uk/news/technology/rss.xml";
-    const response = await fetch(testUrl, {
-      redirect: "follow",
-    });
-    const text = await response.text();
-
-    return NextResponse.json({
-      success: true,
-      url: testUrl,
-      status: response.status,
-      textLength: text.length,
-      textPreview: text.slice(0, 300),
-    });
-  } catch (error: any) {
-    return NextResponse.json({
-      success: false,
-      error: error.message,
-    });
-  }
-}
-
 // Fetch RSS/Atom feed and return items
 async function fetchRSS(url: string): Promise<{ title: string; link: string; description: string; pubDate: string; imageUrl?: string }[]> {
   console.log(`[fetchRSS] Starting fetch for URL: ${url}`);
@@ -60,7 +32,6 @@ async function fetchRSS(url: string): Promise<{ title: string; link: string; des
     const xml = await response.text();
     console.log(`[fetchRSS] XML received, length: ${xml.length}`);
 
-    // Detect feed type - RSS uses <item>, Atom uses <entry>
     const isAtom = xml.includes("<feed") || xml.includes("<entry");
     const itemRegex = isAtom
       ? /<entry[^>]*>([\s\S]*?)<\/entry>/gi
@@ -74,17 +45,14 @@ async function fetchRSS(url: string): Promise<{ title: string; link: string; des
       matchCount++;
       const itemXml = match[1];
 
-      // For Atom, title might have type="html" attribute
       let title = extractTag(itemXml, "title");
       if (!title) {
-        // Try extracting from <name> for Atom author/creator
         const nameMatch = itemXml.match(/<name[^>]*>([\s\S]*?)<\/name>/i);
         if (nameMatch) {
           title = decodeHtmlEntities(nameMatch[1].trim());
         }
       }
 
-      // For Atom, link is in href attribute
       let link = extractTag(itemXml, "link");
       if (!link) {
         const linkMatch = itemXml.match(/<link[^>]+href=["']([^"']+)["'][^>]*>/i);
@@ -93,7 +61,6 @@ async function fetchRSS(url: string): Promise<{ title: string; link: string; des
         }
       }
 
-      // description for RSS, summary/content for Atom
       let description = extractTag(itemXml, "description") ||
                         extractTag(itemXml, "summary") ||
                         extractTag(itemXml, "content");
@@ -101,11 +68,9 @@ async function fetchRSS(url: string): Promise<{ title: string; link: string; des
                       extractTag(itemXml, "published") ||
                       extractTag(itemXml, "updated");
 
-      // Extract image: try media:thumbnail, media:content, then img from HTML
       let imageUrl = extractMediaTag(itemXml, "thumbnail") ||
                      extractMediaTag(itemXml, "content");
 
-      // Fallback: extract from description/summary HTML content
       if (!imageUrl && description) {
         imageUrl = extractImageFromHtml(description);
       }
@@ -125,22 +90,18 @@ async function fetchRSS(url: string): Promise<{ title: string; link: string; des
   }
 }
 
-// Extract media tag (thumbnail/content) attribute
 function extractMediaTag(xml: string, tag: string): string {
   const regex = new RegExp(`<media:${tag}[^>]*url=["']([^"']+)["'][^>]*>`, "i");
   const match = xml.match(regex);
   return match ? match[1] : "";
 }
 
-// Extract image from HTML content (for Atom feeds or feeds without media tags)
 function extractImageFromHtml(html: string): string {
-  // Try to find <img src="..."> in the HTML
   const imgRegex = /<img[^>]+src=["']([^"']+)["'][^>]*>/i;
   const match = html.match(imgRegex);
   return match ? match[1] : "";
 }
 
-// Decode HTML entities (e.g. &#8217; -> ', &amp; -> &)
 function decodeHtmlEntities(text: string): string {
   return text
     .replace(/&#(\d+);/g, (_, num) => String.fromCharCode(parseInt(num, 10)))
@@ -154,7 +115,6 @@ function decodeHtmlEntities(text: string): string {
 }
 
 function extractTag(xml: string, tag: string): string {
-  // Use regular string to avoid template literal escaping issues
   const whitespace = "[\\s\\S]";
   const cdataPart = "<" + tag + "[^>]*><!\\[CDATA\\[(" + whitespace + "*?)\\]\\]><\\/" + tag + ">";
   const normalPart = "<" + tag + "[^>]*>(" + whitespace + "*?)<\\/" + tag + ">";
@@ -168,14 +128,11 @@ function extractTag(xml: string, tag: string): string {
 
 // Extract keywords from title for image generation
 function extractKeywords(title: string): string {
-  // Remove common stop words and get main keywords
   const stopWords = ["the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with", "by", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "do", "does", "did", "will", "would", "could", "should", "may", "might", "can", "this", "that", "these", "those", "it", "its", "as", "from", "up", "down", "out", "about", "into", "through", "during", "before", "after", "above", "below", "between", "under", "again", "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "each", "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very", "just", "also", "现在", "如何", "什么", "为什么", "怎么样", "的", "了", "和", "是", "在", "与", "或", "等"];
 
-  // Extract English words and Chinese characters
   const englishWords = title.match(/[a-zA-Z][a-zA-Z0-9-]*/g) || [];
   const chineseChars = title.match(/[一-龥]+/g) || [];
 
-  // Filter and combine
   const filteredEnglish = englishWords
     .filter(w => w.length > 2 && !stopWords.includes(w.toLowerCase()))
     .slice(0, 3);
@@ -187,7 +144,7 @@ function extractKeywords(title: string): string {
   return [...filteredEnglish, ...filteredChinese].slice(0, 5).join(" ");
 }
 
-// Multi-color gradient presets for variety
+// Multi-color gradient presets
 const gradientPresets = [
   { stops: ["#ff6b6b", "#feca57", "#48dbfb", "#667eea", "#a855f7"], angle: "0,0 100,100" },
   { stops: ["#00d9ff", "#6365f1", "#a855f7", "#ec4899"], angle: "0,100 100,0" },
@@ -197,7 +154,7 @@ const gradientPresets = [
   { stops: ["#4c1d95", "#1e3a5f", "#065f46", "#0f766e"], angle: "100,0 0,100" },
 ];
 
-// Generate cover image using SVG with multi-color gradient and frosted glass effect
+// Generate cover image - returns SVG as data URL (can be stored in Supabase)
 async function generateCoverImage(title: string, slug: string): Promise<string> {
   const keywords = extractKeywords(title);
   if (!keywords) {
@@ -205,12 +162,10 @@ async function generateCoverImage(title: string, slug: string): Promise<string> 
     return "";
   }
 
-  // Pick a random gradient preset based on slug hash for consistency
   const slugHash = slug.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const gradientIndex = slugHash % gradientPresets.length;
   const gradient = gradientPresets[gradientIndex];
 
-  // Generate random positions for blur ellipses based on slug hash
   const blurPositions = [
     { cx: 150 + (slugHash % 100), cy: 150 + ((slugHash * 7) % 200), rx: 350 + (slugHash % 80), ry: 220 + ((slugHash * 3) % 60) },
     { cx: 950 + ((slugHash * 11) % 100), cy: 450 + ((slugHash * 13) % 100), rx: 320 + ((slugHash * 5) % 70), ry: 200 + ((slugHash * 17) % 50) },
@@ -225,7 +180,6 @@ async function generateCoverImage(title: string, slug: string): Promise<string> 
     `<ellipse cx="${blur.cx}" cy="${blur.cy}" rx="${blur.rx}" ry="${blur.ry}" fill="#ffffff" opacity="0.1" filter="url(#blur${i + 1})"/>`
   ).join("");
 
-  // Truncate keywords if too long
   const displayText = keywords.length > 15 ? keywords.substring(0, 15) + "..." : keywords;
 
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
@@ -244,24 +198,9 @@ async function generateCoverImage(title: string, slug: string): Promise<string> 
   <text x="600" y="385" text-anchor="middle" fill="white" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="300" opacity="0.7">科技资讯</text>
 </svg>`;
 
-  try {
-    const coversDir = path.join(process.cwd(), "public", "generated-covers");
-    if (!fs.existsSync(coversDir)) {
-      fs.mkdirSync(coversDir, { recursive: true });
-    }
-
-    const fileName = `${slug}.svg`;
-    const filePath = path.join(coversDir, fileName);
-
-    fs.writeFileSync(filePath, svg, "utf8");
-
-    const savedUrl = `/generated-covers/${fileName}`;
-    console.log(`[ImageGen] Saved SVG to: ${savedUrl}`);
-    return savedUrl;
-  } catch (error) {
-    console.error("[ImageGen] Error:", error);
-    return "";
-  }
+  // Return as data URL for storage in Supabase
+  const base64 = Buffer.from(svg, "utf8").toString("base64");
+  return `data:image/svg+xml;base64,${base64}`;
 }
 
 function escapeXml(text: string): string {
@@ -320,7 +259,6 @@ async function generateArticle(content: string, llmConfig: LLMConfig): Promise<{
     { role: "user", content: prompt },
   ];
 
-  // Call LLM API
   const response = await fetch(`${llmConfig.endpoint}/chat/completions`, {
     method: "POST",
     headers: {
@@ -342,7 +280,6 @@ async function generateArticle(content: string, llmConfig: LLMConfig): Promise<{
   const data = await response.json();
   const generatedText = data.choices[0].message.content;
 
-  // Parse generated content
   const lines = generatedText.split("\n");
   let title = "", description = "", category = "", contentPart = "";
   let currentSection = "";
@@ -365,7 +302,6 @@ async function generateArticle(content: string, llmConfig: LLMConfig): Promise<{
     }
   }
 
-  // Map Chinese category to ID
   const categoryMap: Record<string, string> = {
     "大厂动态": "tech-giants",
     "行业脉搏": "industry-pulse",
@@ -382,59 +318,15 @@ async function generateArticle(content: string, llmConfig: LLMConfig): Promise<{
   };
 }
 
-// Check if article with same source_url already exists (true deduplication by URL)
-function articleExistsByUrl(sourceUrl: string): { exists: boolean; slug?: string } {
-  const files = fs.readdirSync(postsDir).filter((f: string) => f.endsWith(".md"));
+// Check if article with same source_url already exists
+async function articleExistsByUrl(sourceUrl: string): Promise<{ exists: boolean; slug?: string }> {
+  const { data } = await supabase
+    .from("articles")
+    .select("slug")
+    .eq("source_url", sourceUrl)
+    .maybeSingle();
 
-  for (const file of files) {
-    const fullPath = path.join(postsDir, file);
-    const { data } = matter(fs.readFileSync(fullPath, "utf8"));
-
-    if (data.source_url === sourceUrl) {
-      return { exists: true, slug: file.replace(/\.md$/, "") };
-    }
-  }
-
-  return { exists: false };
-}
-
-// Save article to file
-function saveArticle(data: {
-  title: string;
-  date: string;
-  category: string;
-  source_url: string;
-  description: string;
-  cover_image: string;
-  is_featured: boolean;
-  content: string;
-  slug?: string;  // Optional: pass original RSS slug to ensure consistent deduplication
-}): string {
-  const slug = data.slug || generateSlug(data.title);
-  const filePath = path.join(postsDir, `${slug}.md`);
-
-  // Escape Chinese curly quotes to prevent YAML parsing issues
-  const escapeQuotes = (str: string) => str.replace(/"/g, '\\"').replace(/"/g, '\\"');
-
-  const frontmatter = [
-    "---",
-    `title: "${escapeQuotes(data.title)}"`,
-    `date: "${data.date}"`,
-    `category: "${data.category}"`,
-    `source_url: "${escapeQuotes(data.source_url)}"`,
-    `description: "${escapeQuotes(data.description)}"`,
-    `cover_image: "${escapeQuotes(data.cover_image)}"`,
-    `is_featured: ${data.is_featured}`,
-    "---",
-    data.content
-  ].join("\n");
-
-  fs.writeFileSync(filePath, frontmatter, "utf8");
-
-  // Regenerate posts.json
-  regeneratePostsJson();
-
-  return slug;
+  return { exists: !!data, slug: data?.slug };
 }
 
 function generateSlug(title: string): string {
@@ -445,50 +337,38 @@ function generateSlug(title: string): string {
     .slice(0, 50) || "untitled-" + Date.now();
 }
 
-function regeneratePostsJson() {
-  const publicDir = path.join(process.cwd(), "public");
-  if (!fs.existsSync(publicDir)) {
-    fs.mkdirSync(publicDir, { recursive: true });
+// Save article to Supabase
+async function saveArticle(data: {
+  title: string;
+  date: string;
+  category: string;
+  source_url: string;
+  description: string;
+  cover_image: string;
+  is_featured: boolean;
+  content: string;
+  slug?: string;
+}): Promise<string> {
+  const slug = data.slug || generateSlug(data.title);
+
+  const { error } = await supabase.from("articles").insert({
+    slug,
+    title: data.title,
+    date: data.date,
+    category: data.category,
+    source_url: data.source_url,
+    description: data.description,
+    cover_image: data.cover_image,
+    is_featured: data.is_featured,
+    content: data.content,
+  });
+
+  if (error) {
+    console.error("Supabase save error:", error);
+    throw new Error("Failed to save article");
   }
 
-  const files = fs.readdirSync(postsDir).filter((f: string) => f.endsWith(".md"));
-  const posts = files.map((file: string) => {
-    const fullPath = path.join(postsDir, file);
-    const { data } = matter(fs.readFileSync(fullPath, "utf8"));
-    return {
-      slug: file.replace(/\.md$/, ""),
-      title: data.title || "",
-      date: data.date || "",
-      category: data.category || "",
-      source_url: data.source_url || "",
-      description: data.description || "",
-      cover_image: data.cover_image || "",
-      is_featured: data.is_featured || false,
-    };
-  }).sort((a: { date: string }, b: { date: string }) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-  const featuredPost = posts.find((p: { is_featured: boolean }) => p.is_featured) || null;
-  fs.writeFileSync(
-    path.join(publicDir, "posts.json"),
-    JSON.stringify({ posts, featuredPost }, null, 2),
-    "utf8"
-  );
-}
-
-// Trigger Netlify deploy (for auto-deployment after generating new content)
-async function triggerNetlifyDeploy() {
-  const deployHook = process.env.NETLIFY_DEPLOY_HOOK;
-  if (!deployHook) {
-    console.log("[Deploy] No NETLIFY_DEPLOY_HOOK configured");
-    return;
-  }
-
-  try {
-    await fetch(deployHook, { method: "POST" });
-    console.log("[Deploy] Netlify deploy triggered successfully");
-  } catch (error) {
-    console.error("[Deploy] Failed to trigger Netlify deploy:", error);
-  }
+  return slug;
 }
 
 export async function POST(request: NextRequest) {
@@ -496,8 +376,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     let { dataSources, defaultCoverImage } = body;
 
-    // ALWAYS use environment variables for API key - this is more secure
-    // API key is never sent from frontend or stored in localStorage
     if (!process.env.AUTOMATION_LLM_API_KEY) {
       return NextResponse.json({ error: "请先在环境变量中配置 AI API Key" }, { status: 400 });
     }
@@ -522,26 +400,19 @@ export async function POST(request: NextRequest) {
 
     const results: { source: string; title: string; status: string; error?: string }[] = [];
 
-    // Process each enabled data source
     for (const source of enabledSources) {
       try {
-        // Fetch RSS items
         const items = await fetchRSS(source.url);
         console.log(`Fetched ${items.length} items from ${source.name}`);
 
         if (items.length === 0) {
-          // Return debug info for troubleshooting
           results.push({ source: source.name, title: "", status: "error", error: "RSS 无内容或解析失败" });
           continue;
         }
 
-        // Process each item (limit to latest 3 to avoid too many API calls)
         for (const item of items.slice(0, 3)) {
           try {
-            // Check for duplicates using source_url (the original article link)
-            // This is more reliable than title-based slug which can change after LLM rewriting
-            const urlCheck = articleExistsByUrl(item.link);
-
+            const urlCheck = await articleExistsByUrl(item.link);
             console.log(`[Automation] Checking duplicate: title="${item.title}", link="${item.link}", urlExists=${urlCheck.exists}`);
 
             if (urlCheck.exists) {
@@ -549,15 +420,8 @@ export async function POST(request: NextRequest) {
               continue;
             }
 
-            // Also check by slug for backward compatibility
             const slug = generateSlug(item.title);
-            const existingPath = path.join(postsDir, `${slug}.md`);
-            if (fs.existsSync(existingPath)) {
-              results.push({ source: source.name, title: item.title, status: "skipped", error: "已存在" });
-              continue;
-            }
 
-            // Convert to Markdown (fallback to description if Jina AI fails)
             let markdown = "";
             try {
               markdown = await convertToMarkdown(item.link);
@@ -566,13 +430,10 @@ export async function POST(request: NextRequest) {
               markdown = item.description || "";
             }
 
-            // Generate article with LLM
             const generated = await generateArticle(markdown, llmConfig);
 
-            // Determine cover image: RSS image > default cover > AI generated
             let coverImage = item.imageUrl || defaultCoverImage || process.env.AUTOMATION_DEFAULT_COVER_IMAGE || "";
 
-            // If no cover image, generate one using AI
             if (!coverImage) {
               console.log(`[Automation] No cover image found, generating AI cover for: ${generated.title || item.title}`);
               try {
@@ -582,16 +443,16 @@ export async function POST(request: NextRequest) {
               }
             }
 
-            const savedSlug = saveArticle({
+            const savedSlug = await saveArticle({
               title: generated.title || item.title,
               date: new Date(item.pubDate).toISOString().split("T")[0] || new Date().toISOString().split("T")[0],
               category: source.category,
               source_url: item.link,
-              description: generated.description || item.description.slice(0, 200),
+              description: generated.description || (item.description?.slice(0, 200) || ""),
               cover_image: coverImage,
               is_featured: false,
               content: generated.content || markdown.slice(0, 2000),
-              slug: slug,  // Use original RSS title's slug for deduplication
+              slug: slug,
             });
 
             results.push({ source: source.name, title: generated.title || item.title, status: "success" });
@@ -606,13 +467,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Trigger Netlify deploy after successful automation
-    triggerNetlifyDeploy();
-
     return NextResponse.json({
       success: true,
       results,
-      message: `处理完成：成功 ${results.filter(r => r.status === "success").length} 篇，跳过 ${results.filter(r => r.status === "skipped").length} 篇，失败 ${results.filter(r => r.status === "error").length} 篇（部署已触发）`
+      message: `处理完成：成功 ${results.filter(r => r.status === "success").length} 篇，跳过 ${results.filter(r => r.status === "skipped").length} 篇，失败 ${results.filter(r => r.status === "error").length} 篇`
     });
   } catch (error: any) {
     console.error("Automation error:", error);

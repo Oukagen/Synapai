@@ -37,7 +37,7 @@ export default function DashboardPage() {
   const loadPosts = async () => {
     try {
       const [serverRes, draftPosts] = await Promise.all([
-        fetch("/posts.json").then(r => r.ok ? r.json() : null),
+        fetch("/api/articles").then(r => r.ok ? r.json() : null),
         Promise.resolve(JSON.parse(localStorage.getItem("draftPosts") || "[]"))
       ]);
 

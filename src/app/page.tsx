@@ -30,7 +30,7 @@ function HomeContent() {
   useEffect(() => {
     async function loadPosts() {
       try {
-        const res = await fetch("/posts.json");
+        const res = await fetch("/api/articles");
         if (res.ok) {
           const data = await res.json();
           setPosts(data.posts);
