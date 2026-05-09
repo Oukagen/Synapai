@@ -85,6 +85,21 @@ export default function AutomationPage() {
 
   // Load saved configurations on mount
   useEffect(() => {
+    // Load API config (provider, endpoint, model)
+    const savedApiConfig = localStorage.getItem("automation_api_config");
+    if (savedApiConfig) {
+      try {
+        const parsed = JSON.parse(savedApiConfig);
+        setApiConfig({
+          provider: parsed.provider || "openai",
+          endpoint: parsed.endpoint || "",
+          model: parsed.model || "",
+        });
+      } catch (e) {
+        console.error("Failed to parse saved API config");
+      }
+    }
+
     const savedDataSources = localStorage.getItem("automation_data_sources");
     if (savedDataSources) {
       try {
