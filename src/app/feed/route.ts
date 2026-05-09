@@ -8,9 +8,9 @@ const postsDir = path.join(process.cwd(), "content/posts");
 function getAllPosts() {
   if (!fs.existsSync(postsDir)) return [];
 
-  const files = fs.readdirSync(postsDir).filter(f => f.endsWith(".md"));
+  const files = fs.readdirSync(postsDir).filter((f: string) => f.endsWith(".md"));
 
-  return files.map(file => {
+  return files.map((file: string) => {
     const fullPath = path.join(postsDir, file);
     const { data, content } = matter(fs.readFileSync(fullPath, "utf8"));
     return {
@@ -21,7 +21,7 @@ function getAllPosts() {
       description: data.description || "",
       content: content,
     };
-  }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }).sort((a: { date: string }, b: { date: string }) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
 export async function GET() {
@@ -31,7 +31,7 @@ export async function GET() {
   const siteTitle = "Synapai - 突触简报";
   const siteDescription = "AI行业资讯与深度报道";
 
-  const items = posts.map(post => `
+  const items = posts.map((post: { title: string; slug: string; date: string; description: string; content: string }) => `
     <item>
       <title><![CDATA[${post.title}]]></title>
       <link>${siteUrl}/posts/${encodeURIComponent(post.slug)}</link>

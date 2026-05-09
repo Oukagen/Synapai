@@ -10,8 +10,8 @@ const publicDir = path.join(process.cwd(), "public");
 function generatePostsJson() {
   if (!fs.existsSync(postsDir)) return { posts: [], featuredPost: null };
 
-  const files = fs.readdirSync(postsDir).filter((f) => f.endsWith(".md"));
-  const posts = files.map((file) => {
+  const files = fs.readdirSync(postsDir).filter((f: string) => f.endsWith(".md"));
+  const posts = files.map((file: string) => {
     const fullPath = path.join(postsDir, file);
     const { data } = matter(fs.readFileSync(fullPath, "utf8"));
     return {
@@ -24,9 +24,9 @@ function generatePostsJson() {
       cover_image: data.cover_image || "",
       is_featured: data.is_featured || false,
     };
-  }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }).sort((a: { date: string }, b: { date: string }) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  const featuredPost = posts.find((p) => p.is_featured) || null;
+  const featuredPost = posts.find((p: { is_featured: boolean }) => p.is_featured) || null;
 
   if (!fs.existsSync(publicDir)) {
     fs.mkdirSync(publicDir, { recursive: true });
@@ -47,8 +47,8 @@ export async function GET() {
       return NextResponse.json([]);
     }
 
-    const files = fs.readdirSync(trashDir).filter((f) => f.endsWith(".md"));
-    const trashItems = files.map((file) => {
+    const files = fs.readdirSync(trashDir).filter((f: string) => f.endsWith(".md"));
+    const trashItems = files.map((file: string) => {
       const fullPath = path.join(trashDir, file);
       const { data } = matter(fs.readFileSync(fullPath, "utf8"));
       return {
@@ -61,7 +61,7 @@ export async function GET() {
         cover_image: data.cover_image || "",
         is_featured: data.is_featured || false,
       };
-    }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    }).sort((a: { date: string }, b: { date: string }) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     return NextResponse.json(trashItems);
   } catch (error) {

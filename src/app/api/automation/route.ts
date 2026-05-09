@@ -384,7 +384,7 @@ async function generateArticle(content: string, llmConfig: LLMConfig): Promise<{
 
 // Check if article with same source_url already exists (true deduplication by URL)
 function articleExistsByUrl(sourceUrl: string): { exists: boolean; slug?: string } {
-  const files = fs.readdirSync(postsDir).filter(f => f.endsWith(".md"));
+  const files = fs.readdirSync(postsDir).filter((f: string) => f.endsWith(".md"));
 
   for (const file of files) {
     const fullPath = path.join(postsDir, file);
@@ -448,8 +448,8 @@ function regeneratePostsJson() {
     fs.mkdirSync(publicDir, { recursive: true });
   }
 
-  const files = fs.readdirSync(postsDir).filter(f => f.endsWith(".md"));
-  const posts = files.map(file => {
+  const files = fs.readdirSync(postsDir).filter((f: string) => f.endsWith(".md"));
+  const posts = files.map((file: string) => {
     const fullPath = path.join(postsDir, file);
     const { data } = matter(fs.readFileSync(fullPath, "utf8"));
     return {
@@ -462,9 +462,9 @@ function regeneratePostsJson() {
       cover_image: data.cover_image || "",
       is_featured: data.is_featured || false,
     };
-  }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }).sort((a: { date: string }, b: { date: string }) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  const featuredPost = posts.find(p => p.is_featured) || null;
+  const featuredPost = posts.find((p: { is_featured: boolean }) => p.is_featured) || null;
   fs.writeFileSync(
     path.join(publicDir, "posts.json"),
     JSON.stringify({ posts, featuredPost }, null, 2),
