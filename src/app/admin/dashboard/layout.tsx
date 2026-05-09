@@ -37,6 +37,7 @@ export default function DashboardLayout({
     router.push("/admin");
   };
 
+  // Show loading, don't render children until auth is checked
   if (checking) {
     return (
       <div className="min-h-screen bg-[#131313] flex items-center justify-center">
@@ -45,8 +46,13 @@ export default function DashboardLayout({
     );
   }
 
+  // Don't render children if not authenticated
   if (!authenticated) {
-    return null;
+    return (
+      <div className="min-h-screen bg-[#131313] flex items-center justify-center">
+        <div className="text-[#737373]">正在跳转...</div>
+      </div>
+    );
   }
 
   return (

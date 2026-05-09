@@ -1,16 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
-// In a real app, you'd have a separate "deleted" flag or move to a deleted_articles table
-// For now, we'll use a simple approach: store deleted articles with a deleted_at timestamp
-// But since we deleted from filesystem, let's implement a "soft delete" table instead
-
 export async function GET() {
   try {
-    // For trash, we're using a separate table approach
-    // But since we can't write to filesystem anymore, let's use Supabase for everything
-    // Actually, let's just return empty for now - the delete is permanent in Supabase
-    return NextResponse.json([]);
+    // Get all soft-deleted articles (deleted_at is not null)
+    const { data, error } = await supabase
+      .from("articles")
+      .select("slug, title, date, category, source_url, description, cover_image, is_featured, deleted_at")
+      .not("deleted_at", "is", null)
+      .order("deleted_at", { ascending: false });
+
+    if (error) {
+      console.error("Trash fetch error:", error);
+      return NextResponse.json({ error: "获取回收站失败" }, { status: 500 });
+    }
+
+    return NextResponse.json(data || []);
   } catch (error) {
     return NextResponse.json({ error: "获取回收站失败" }, { status: 500 });
   }
@@ -24,9 +29,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "缺少参数" }, { status: 400 });
     }
 
-    // Since we're using Supabase now, "delete" is permanent
-    // We could implement soft delete by adding a deleted_at column
+    if (action === "restore") {
+      // Restore - clear deleted_at
+      const { error } = await supabase
+        .from("articles")
+        .update({ deleted_at: null })
+        .eq("slug", slug);
+
+      if (error) {
+        console.error("Restore error:", error);
+        return NextResponse.json({ error: "恢复失败" }, { status: 500 });
+      }
+      return NextResponse.json({ success: true, action: "restored" });
+    }
+
     if (action === "delete") {
+      // Permanent delete - actually remove from database
       const { error } = await supabase
         .from("articles")
         .delete()
@@ -37,12 +55,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "删除失败" }, { status: 500 });
       }
       return NextResponse.json({ success: true, action: "deleted" });
-    }
-
-    if (action === "restore") {
-      // In a soft delete implementation, we'd clear the deleted_at
-      // For now, restore is not implemented since delete is permanent
-      return NextResponse.json({ error: "恢复功能暂不可用" }, { status: 400 });
     }
 
     return NextResponse.json({ error: "未知操作" }, { status: 400 });

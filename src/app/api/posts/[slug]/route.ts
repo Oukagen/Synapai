@@ -13,6 +13,7 @@ export async function GET(
       .from("articles")
       .select("*")
       .eq("slug", decodedSlug)
+      .is("deleted_at", null)
       .single();
 
     if (error || !data) {
@@ -43,13 +44,14 @@ export async function DELETE(
     const { slug } = await params;
     const decodedSlug = decodeURIComponent(slug);
 
+    // Soft delete - set deleted_at timestamp
     const { error } = await supabase
       .from("articles")
-      .delete()
+      .update({ deleted_at: new Date().toISOString() })
       .eq("slug", decodedSlug);
 
     if (error) {
-      console.error("Delete error:", error);
+      console.error("Soft delete error:", error);
       return NextResponse.json({ error: "删除失败" }, { status: 500 });
     }
 

@@ -36,11 +36,12 @@ export default async function PostPage({ params }: PageProps) {
   const { slug } = await params;
   const decodedSlug = decodeURIComponent(slug);
 
-  // Fetch post from Supabase
+  // Fetch post from Supabase (exclude deleted)
   const { data: post, error } = await supabase
     .from("articles")
     .select("*")
     .eq("slug", decodedSlug)
+    .is("deleted_at", null)
     .single();
 
   if (error || !post) {

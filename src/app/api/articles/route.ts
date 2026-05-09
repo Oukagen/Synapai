@@ -3,9 +3,11 @@ import { supabase } from "@/lib/supabase";
 
 export async function GET(request: NextRequest) {
   try {
+    // Only get non-deleted articles
     const { data, error } = await supabase
       .from("articles")
       .select("slug, title, date, category, source_url, description, cover_image, is_featured")
+      .is("deleted_at", null)
       .order("date", { ascending: false });
 
     if (error) {
