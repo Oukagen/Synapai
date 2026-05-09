@@ -176,32 +176,29 @@ export default function AutomationPage() {
       };
       console.log("Sending payload:", payload);
 
-      const res = await fetch("/api/automation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      let data;
+      try {
+        const res = await fetch("/api/automation", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
 
-      const data = await res.json();
-      console.log("Response:", data);
+        data = await res.json();
+        console.log("Response:", data);
+      } catch (fetchError) {
+        console.error("Fetch error:", fetchError);
+        alert("网络错误，请重试");
+        return;
+      }
 
-      // Show results regardless of HTTP status
+      // Show results if available
       if (data.results) {
-        // Show detailed results
         const successCount = data.results.filter((r: any) => r.status === "success").length || 0;
         const failCount = data.results.filter((r: any) => r.status === "error").length || 0;
         const skipCount = data.results.filter((r: any) => r.status === "skipped").length || 0;
 
-        let message = `成功: ${successCount}, 跳过: ${skipCount}, 失败: ${failCount}\n\n`;
-        if (failCount > 0) {
-          const errors = data.results
-            .filter((r: any) => r.status === "error")
-            .map((r: any) => `• ${r.source}: ${r.error}`)
-            .join("\n");
-          message += `失败详情:\n${errors}`;
-        }
-
-        alert(message || "更新完成");
+        alert(`成功: ${successCount}, 跳过: ${skipCount}, 失败: ${failCount}`);
       } else if (data.error) {
         alert(data.error);
       } else {
@@ -209,7 +206,7 @@ export default function AutomationPage() {
       }
     } catch (error) {
       console.error("Update error:", error);
-      alert("更新失败，请检查网络和配置");
+      alert("更新失败: " + (error.message || "未知错误"));
     }
   };
 
