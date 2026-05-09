@@ -118,6 +118,8 @@ async function saveArticle(article: {
   content: string;
   slug: string;
 }): Promise<boolean> {
+  console.log("Supabase insert:", { slug: article.slug, title: article.title, source_url: article.source_url });
+
   const { error } = await supabase.from("articles").insert({
     slug: article.slug,
     title: article.title,
@@ -134,6 +136,7 @@ async function saveArticle(article: {
     console.error("Save error:", error);
     return false;
   }
+  console.log("Save success!");
   return true;
 }
 
@@ -342,14 +345,17 @@ export async function POST(request: NextRequest) {
           let generated = null;
           try {
             generated = await generateArticle(content);
+            console.log("LLM generated:", generated?.title);
           } catch (llmError) {
-            console.log("LLM failed, using fallback content");
+            console.log("LLM failed, using fallback content:", llmError.message);
           }
 
           // Generate cover image SVG
           const coverImage = generateCoverSvg(generated?.title || item.title, slug);
+          console.log("Generated cover for:", generated?.title || item.title);
 
           // Save
+          console.log("Saving article:", { title: generated?.title || item.title, slug, source_url: item.link });
           const saved = await saveArticle({
             title: generated?.title || item.title,
             date: new Date(item.pubDate).toISOString().split("T")[0],
@@ -361,6 +367,7 @@ export async function POST(request: NextRequest) {
             slug,
           });
 
+          console.log("Save result:", saved);
           if (saved) {
             results.push({ source: source.name, title: item.title, status: "success" });
           } else {
