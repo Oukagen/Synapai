@@ -1,0 +1,351 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Verge Design System - Dark Canvas, Bright Signal */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Oswald:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root {
+  /* Colors - Dark Mode (Primary) */
+  --background: #131313;
+  --bg: var(--background);
+  --surface1: #1A1A1A;
+  --surface2: #262626;
+  --surface3: #404040;
+  --border: #262626;
+  --border-visible: #404040;
+  --text1: #FFFFFF;
+  --text2: #A3A3A3;
+  --text3: #737373;
+  --text4: #525252;
+  --accent: #3CFFD0;
+  --accent-hover: #1DD4A4;
+  --accent-subtle: #002B26;
+  --success: #4AB66A;
+  --warning: #E5A73B;
+  --error: #E5484D;
+
+  /* Fonts */
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-headline: "Oswald", Impact, Helvetica, sans-serif;
+  --font-body: "IBM Plex Sans", Helvetica, Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", Courier New, Courier, monospace;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+
+  /* Radii - Verge uses sharp corners everywhere */
+  --radius: 0px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--background);
+  color: var(--text1);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--accent);
+  color: #000000;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--surface3);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text3);
+}
+
+/* Typography */
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-headline {
+  font-family: var(--font-headline);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Animation - Sharp and immediate */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 150ms ease-out forwards;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 200ms ease-out forwards;
+  opacity: 0;
+}
+
+.animate-slide-in {
+  animation: slideInLeft 200ms ease-out forwards;
+  opacity: 0;
+}
+
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+
+/* Verge Cards - Sharp corners, border elevation */
+.card {
+  background: var(--surface1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.card-hover {
+  transition: background 150ms ease-out, border-color 150ms ease-out;
+}
+
+.card-hover:hover {
+  background: var(--surface2);
+  border-color: var(--border-visible);
+}
+
+/* Verge Buttons */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  height: 44px;
+  padding: 0 20px;
+  background: var(--accent);
+  color: #000000;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 100ms ease-out, transform 100ms ease-out;
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-primary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  height: 44px;
+  padding: 0 20px;
+  background: transparent;
+  color: var(--text1);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid var(--border-visible);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 100ms ease-out, transform 100ms ease-out;
+}
+
+.btn-secondary:hover {
+  background: var(--surface2);
+}
+
+.btn-secondary:active {
+  transform: scale(0.98);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  height: 36px;
+  padding: 0 12px;
+  background: transparent;
+  color: var(--text2);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: color 100ms ease-out;
+}
+
+.btn-ghost:hover {
+  color: var(--text1);
+}
+
+/* Verge Tags */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  background: var(--surface2);
+  color: var(--text2);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius);
+}
+
+.tag-accent {
+  background: var(--accent);
+  color: #000000;
+}
+
+/* Links */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Focus visible */
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Section Labels */
+.section-label {
+  font-family: var(--font-headline);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text2);
+}
+
+/* Image zoom effect */
+.img-zoom {
+  overflow: hidden;
+}
+
+.img-zoom img {
+  transition: transform 200ms ease-out;
+}
+
+.img-zoom:hover img {
+  transform: scale(1.03);
+}
+
+/* Verge Prose */
+.prose h2 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text1);
+  margin: 2rem 0 1rem;
+  letter-spacing: -0.02em;
+}
+
+.prose p {
+  color: var(--text2);
+  margin-bottom: 1.25rem;
+  line-height: 1.7;
+}
+
+/* Loading skeleton */
+.skeleton {
+  background: linear-gradient(90deg, var(--surface1) 25%, var(--surface2) 50%, var(--surface1) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Accent underline */
+.link-underline {
+  position: relative;
+}
+
+.link-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--accent);
+  transition: width 150ms ease-out;
+}
+
+.link-underline:hover::after {
+  width: 100%;
+}
