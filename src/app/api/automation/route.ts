@@ -346,8 +346,8 @@ export async function POST(request: NextRequest) {
           try {
             generated = await generateArticle(content);
             console.log("LLM generated:", generated?.title);
-          } catch (llmError) {
-            console.log("LLM failed, using fallback content:", llmError.message);
+          } catch (llmError: any) {
+            console.log("LLM failed, using fallback content:", llmError?.message);
           }
 
           // Generate cover image SVG
