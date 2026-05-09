@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   FileText,
@@ -18,23 +17,22 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
   const [authenticated, setAuthenticated] = useState(false);
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
     const isAuth = localStorage.getItem("synapai_admin_auth") === "authenticated";
     if (!isAuth) {
-      router.push("/admin");
+      window.location.href = "/admin/login";
     } else {
       setAuthenticated(true);
     }
     setChecking(false);
-  }, [router]);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("synapai_admin_auth");
-    router.push("/admin");
+    window.location.href = "/admin/login";
   };
 
   // Show loading, don't render children until auth is checked

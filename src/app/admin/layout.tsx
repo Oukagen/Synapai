@@ -39,8 +39,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
     if (password === AUTH_PASSWORD) {
       localStorage.setItem("synapai_admin_auth", "authenticated");
-      setIsAuthenticated(true);
-      router.push("/admin/dashboard");
+      // Use window.location for a clean redirect instead of router.push
+      window.location.href = "/admin/dashboard";
     } else {
       setError("密码错误");
     }
@@ -48,8 +48,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   const handleLogout = () => {
     localStorage.removeItem("synapai_admin_auth");
-    setIsAuthenticated(false);
-    router.push("/admin/login");
+    // Use window.location for a clean redirect
+    window.location.href = "/admin/login";
   };
 
   // Show login page if not authenticated and not already on login page
