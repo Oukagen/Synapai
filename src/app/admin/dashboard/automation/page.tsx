@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Rss, Zap, Settings, Play, RefreshCw, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Rss, Zap, Settings, Play, RefreshCw, Plus, Trash2, Key } from "lucide-react";
 
 interface ApiConfig {
   provider: string;  // openai, zhipu, deepseek, kimi, etc.
