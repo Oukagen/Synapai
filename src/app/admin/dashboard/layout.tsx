@@ -7,9 +7,7 @@ import {
   Plus,
   LogOut,
   Home,
-  ChevronRight,
   Trash2,
-  Zap,
 } from "lucide-react";
 
 export default function DashboardLayout({
@@ -110,13 +108,6 @@ export default function DashboardLayout({
               >
                 <Trash2 className="w-4 h-4" />
                 回收站
-              </Link>
-              <Link
-                href="/admin/dashboard/automation"
-                className="flex items-center gap-3 px-3 py-2.5 text-sm text-[#A3A3A3] hover:text-white hover:bg-[#1A1A1A] transition-colors"
-              >
-                <Zap className="w-4 h-4" />
-                自动更新
               </Link>
             </div>
           </nav>

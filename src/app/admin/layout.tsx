@@ -158,12 +158,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               >
                 文章管理
               </Link>
-              <Link
-                href="/admin/dashboard/automation"
-                className={`text-sm transition-colors ${pathname.includes("/automation") ? "text-accent" : "text-[#A3A3A3] hover:text-white"}`}
-              >
-                自动更新
-              </Link>
             </nav>
 
             {/* Right side */}
@@ -197,13 +191,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 文章管理
-              </Link>
-              <Link
-                href="/admin/dashboard/automation"
-                className={`py-2 text-sm ${pathname.includes("/automation") ? "text-accent" : "text-[#A3A3A3]"}`}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                自动更新
               </Link>
             </div>
           </nav>
