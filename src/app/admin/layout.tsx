@@ -5,7 +5,8 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, Lock, LogOut, Menu, X } from "lucide-react";
 
-const AUTH_PASSWORD = "admin123";
+// Admin password from environment variable - set in Netlify dashboard
+const AUTH_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123";
 
 interface AdminLayoutProps {
   children: ReactNode;
