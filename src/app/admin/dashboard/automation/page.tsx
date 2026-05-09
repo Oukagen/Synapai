@@ -185,12 +185,12 @@ export default function AutomationPage() {
       const data = await res.json();
       console.log("Response:", data);
 
-      // Show results regardless of HTTP status (API returns 200 even with errors)
-      if (res.ok || data.results) {
+      // Show results regardless of HTTP status
+      if (data.results) {
         // Show detailed results
-        const successCount = data.results?.filter((r: any) => r.status === "success").length || 0;
-        const failCount = data.results?.filter((r: any) => r.status === "error").length || 0;
-        const skipCount = data.results?.filter((r: any) => r.status === "skipped").length || 0;
+        const successCount = data.results.filter((r: any) => r.status === "success").length || 0;
+        const failCount = data.results.filter((r: any) => r.status === "error").length || 0;
+        const skipCount = data.results.filter((r: any) => r.status === "skipped").length || 0;
 
         let message = `成功: ${successCount}, 跳过: ${skipCount}, 失败: ${failCount}\n\n`;
         if (failCount > 0) {
@@ -202,8 +202,10 @@ export default function AutomationPage() {
         }
 
         alert(message || "更新完成");
+      } else if (data.error) {
+        alert(data.error);
       } else {
-        alert(data.error || "更新失败");
+        alert("更新完成");
       }
     } catch (error) {
       console.error("Update error:", error);

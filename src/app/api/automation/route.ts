@@ -308,8 +308,13 @@ export async function POST(request: NextRequest) {
             content = item.description;
           }
 
-          // Generate with LLM
-          const generated = await generateArticle(content);
+          // Generate with LLM - if it fails, use fallback content
+          let generated = null;
+          try {
+            generated = await generateArticle(content);
+          } catch (llmError) {
+            console.log("LLM failed, using fallback content");
+          }
 
           // Save
           const saved = await saveArticle({
@@ -339,8 +344,9 @@ export async function POST(request: NextRequest) {
     const skipped = results.filter(r => r.status === "skipped").length;
     const failed = results.filter(r => r.status === "error").length;
 
+    // Always return 200 with results, even if some items failed
     return NextResponse.json({
-      success: true,
+      success: success > 0,
       results,
       message: `成功 ${success}，跳过 ${skipped}，失败 ${failed}`,
     });
