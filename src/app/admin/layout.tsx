@@ -117,10 +117,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 进入后台
               </button>
             </form>
-
-            <p className="mt-6 text-xs text-[#525252] text-center">
-              演示密码: admin123
-            </p>
           </div>
 
           <Link
