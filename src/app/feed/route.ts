@@ -1,44 +1,31 @@
 import { NextResponse } from "next/server";
-const fs = require("fs");
-const path = require("path");
-const matter = require("gray-matter");
-
-const postsDir = path.join(process.cwd(), "content/posts");
-
-function getAllPosts() {
-  if (!fs.existsSync(postsDir)) return [];
-
-  const files = fs.readdirSync(postsDir).filter((f: string) => f.endsWith(".md"));
-
-  return files.map((file: string) => {
-    const fullPath = path.join(postsDir, file);
-    const { data, content } = matter(fs.readFileSync(fullPath, "utf8"));
-    return {
-      slug: file.replace(/\.md$/, ""),
-      title: data.title || "",
-      date: data.date || "",
-      category: data.category || "",
-      description: data.description || "",
-      content: content,
-    };
-  }).sort((a: { date: string }, b: { date: string }) => new Date(b.date).getTime() - new Date(a.date).getTime());
-}
+import { supabase } from "@/lib/supabase";
 
 export async function GET() {
-  const posts = getAllPosts();
+  // Fetch articles from Supabase
+  const { data: posts, error } = await supabase
+    .from("articles")
+    .select("slug, title, date, description, content")
+    .is("deleted_at", null)
+    .order("date", { ascending: false });
 
-  const siteUrl = "http://localhost:3000";
+  if (error) {
+    console.error("RSS error:", error);
+    return NextResponse.json({ error: "Failed to fetch articles" }, { status: 500 });
+  }
+
+  const siteUrl = "https://tuchujianbao.netlify.app";
   const siteTitle = "Synapai - 突触简报";
   const siteDescription = "AI行业资讯与深度报道";
 
-  const items = posts.map((post: { title: string; slug: string; date: string; description: string; content: string }) => `
+  const items = (posts || []).map((post) => `
     <item>
       <title><![CDATA[${post.title}]]></title>
       <link>${siteUrl}/posts/${encodeURIComponent(post.slug)}</link>
       <guid>${siteUrl}/posts/${encodeURIComponent(post.slug)}</guid>
       <pubDate>${new Date(post.date).toUTCString()}</pubDate>
-      <description><![CDATA[${post.description}]]></description>
-      <content:encoded><![CDATA[${post.content}]]></content:encoded>
+      <description><![CDATA[${post.description || ""}]]></description>
+      <content:encoded><![CDATA[${post.content || ""}]]></content:encoded>
     </item>
   `).join("\n");
 
