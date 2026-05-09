@@ -204,9 +204,9 @@ export default function AutomationPage() {
       } else {
         alert("更新完成");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Update error:", error);
-      alert("更新失败: " + (error.message || "未知错误"));
+      alert("更新失败: " + (error?.message || "未知错误"));
     }
   };
 
