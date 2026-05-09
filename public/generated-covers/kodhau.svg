@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff6b6b"/><stop offset="25%" stop-color="#feca57"/><stop offset="50%" stop-color="#48dbfb"/><stop offset="75%" stop-color="#667eea"/><stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+    <filter id="blur1"><feGaussianBlur in="SourceGraphic" stdDeviation="30"/></filter>
+    <filter id="blur2"><feGaussianBlur in="SourceGraphic" stdDeviation="28"/></filter>
+    <filter id="blur3"><feGaussianBlur in="SourceGraphic" stdDeviation="26"/></filter>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <ellipse cx="186" cy="202" rx="426" ry="268" fill="#ffffff" opacity="0.1" filter="url(#blur1)"/><ellipse cx="1046" cy="518" rx="350" ry="212" fill="#ffffff" opacity="0.1" filter="url(#blur2)"/><ellipse cx="634" cy="428" rx="292" ry="216" fill="#ffffff" opacity="0.1" filter="url(#blur3)"/>
+  <text x="600" y="315" text-anchor="middle" fill="white" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="600" letter-spacing="4">Kodhau Senior A...</text>
+  <text x="600" y="385" text-anchor="middle" fill="white" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="300" opacity="0.7">科技资讯</text>
+</svg>

@@ -30,9 +30,6 @@ Thumbs.db
 # Vercel
 .vercel/
 
-# Generated covers (optional - these can be regenerated)
-public/generated-covers/
-
 # Temporary files
 *.tmp
 *.temp

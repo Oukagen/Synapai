@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fb923c"/><stop offset="33.333333333333336%" stop-color="#a855f7"/><stop offset="66.66666666666667%" stop-color="#ec4899"/><stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+    <filter id="blur1"><feGaussianBlur in="SourceGraphic" stdDeviation="30"/></filter>
+    <filter id="blur2"><feGaussianBlur in="SourceGraphic" stdDeviation="28"/></filter>
+    <filter id="blur3"><feGaussianBlur in="SourceGraphic" stdDeviation="26"/></filter>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <ellipse cx="187" cy="309" rx="367" ry="271" fill="#ffffff" opacity="0.1" filter="url(#blur1)"/><ellipse cx="957" cy="531" rx="385" ry="229" fill="#ffffff" opacity="0.1" filter="url(#blur2)"/><ellipse cx="553" cy="401" rx="319" ry="207" fill="#ffffff" opacity="0.1" filter="url(#blur3)"/>
+  <text x="600" y="315" text-anchor="middle" fill="white" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="600" letter-spacing="4">MoE ZAYA1-8B De...</text>
+  <text x="600" y="385" text-anchor="middle" fill="white" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="300" opacity="0.7">科技资讯</text>
+</svg>
