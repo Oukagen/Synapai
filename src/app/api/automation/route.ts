@@ -376,14 +376,25 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     let { dataSources, defaultCoverImage } = body;
 
+    // Debug: log all environment variables (except the actual key)
+    console.log("Automation LLM Config:");
+    console.log("- PROVIDER:", process.env.AUTOMATION_LLM_PROVIDER);
+    console.log("- ENDPOINT:", process.env.AUTOMATION_LLM_ENDPOINT);
+    console.log("- MODEL:", process.env.AUTOMATION_LLM_MODEL);
+    console.log("- HAS API KEY:", !!process.env.AUTOMATION_LLM_API_KEY);
+
     if (!process.env.AUTOMATION_LLM_API_KEY) {
       return NextResponse.json({ error: "请先在环境变量中配置 AI API Key" }, { status: 400 });
+    }
+
+    if (!process.env.AUTOMATION_LLM_ENDPOINT) {
+      return NextResponse.json({ error: "请先在环境变量中配置 AI API Endpoint" }, { status: 400 });
     }
 
     const llmConfig = {
       provider: process.env.AUTOMATION_LLM_PROVIDER || "custom",
       apiKey: process.env.AUTOMATION_LLM_API_KEY,
-      endpoint: process.env.AUTOMATION_LLM_ENDPOINT || "",
+      endpoint: process.env.AUTOMATION_LLM_ENDPOINT,
       model: process.env.AUTOMATION_LLM_MODEL || "",
     };
 
