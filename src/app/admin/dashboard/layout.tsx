@@ -23,7 +23,7 @@ export default function DashboardLayout({
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    const isAuth = localStorage.getItem("adminAuthenticated") === "true";
+    const isAuth = localStorage.getItem("synapai_admin_auth") === "authenticated";
     if (!isAuth) {
       router.push("/admin");
     } else {
@@ -33,7 +33,7 @@ export default function DashboardLayout({
   }, [router]);
 
   const handleLogout = () => {
-    localStorage.removeItem("adminAuthenticated");
+    localStorage.removeItem("synapai_admin_auth");
     router.push("/admin");
   };
 
