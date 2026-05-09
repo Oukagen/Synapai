@@ -32,7 +32,7 @@ export default function DashboardLayout({
 
   const handleLogout = () => {
     localStorage.removeItem("synapai_admin_auth");
-    window.location.href = "/admin/login";
+    window.location.href = "/admin";
   };
 
   // Show loading, don't render children until auth is checked
