@@ -413,14 +413,17 @@ function saveArticle(data: {
   const slug = data.slug || generateSlug(data.title);
   const filePath = path.join(postsDir, `${slug}.md`);
 
+  // Escape Chinese curly quotes to prevent YAML parsing issues
+  const escapeQuotes = (str: string) => str.replace(/"/g, '\\"').replace(/"/g, '\\"');
+
   const frontmatter = [
     "---",
-    `title: "${data.title}"`,
+    `title: "${escapeQuotes(data.title)}"`,
     `date: "${data.date}"`,
     `category: "${data.category}"`,
-    `source_url: "${data.source_url}"`,
-    `description: "${data.description}"`,
-    `cover_image: "${data.cover_image}"`,
+    `source_url: "${escapeQuotes(data.source_url)}"`,
+    `description: "${escapeQuotes(data.description)}"`,
+    `cover_image: "${escapeQuotes(data.cover_image)}"`,
     `is_featured: ${data.is_featured}`,
     "---",
     data.content

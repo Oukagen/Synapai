@@ -3,7 +3,7 @@ title: "AI替代还是增强？Basata创始人的回答"
 date: "2026-05-08"
 category: "industry-pulse"
 source_url: "https://techcrunch.com/2026/05/07/the-back-office-problem-that-explains-why-specialists-never-call-you-back/"
-description: "AI公司Basata面临"增强员工还是取代员工"的灵魂拷问。创始人表示，目前合作的行政人员并不担心被AI取代，他们更担心的是被繁重的工作量"淹没"。这反映出AI应用落地的现实困境。"
+description: "AI公司Basata面临\"增强员工还是取代员工\"的灵魂拷问。创始人表示，目前合作的行政人员并不担心被AI取代，他们更担心的是被繁重的工作量\"淹没\"。这反映出AI应用落地的现实困境。"
 cover_image: "/generated-covers/why-you-can-never-get-your-doctor-to-call-you-back.svg"
 is_featured: false
 ---

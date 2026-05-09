@@ -1,9 +1,9 @@
 ---
-title: "企业AI代理的"沉默漏洞"：Partial Evidence Bench登场"
+title: "企业AI代理的\"沉默漏洞\"：Partial Evidence Bench登场"
 date: "2026-05-08"
 category: "model-tracking"
 source_url: "https://arxiv.org/abs/2605.05379"
-description: "企业AI代理在访问控制环境下可能产生"虚假完整性"——答案看似完整，实则关键证据被静默过滤。Partial Evidence Bench提供72个任务的确定性基准，涵盖尽职调查、合规审计、安全响应三大场景。基线显示：静默过滤导致灾难性不安全，而显式失败报告可消除隐患。"
+description: "企业AI代理在访问控制环境下可能产生\"虚假完整性\"——答案看似完整，实则关键证据被静默过滤。Partial Evidence Bench提供72个任务的确定性基准，涵盖尽职调查、合规审计、安全响应三大场景。基线显示：静默过滤导致灾难性不安全，而显式失败报告可消除隐患。"
 cover_image: "/generated-covers/partial-evidence-bench-benchmarking-authorizationl.svg"
 is_featured: false
 ---

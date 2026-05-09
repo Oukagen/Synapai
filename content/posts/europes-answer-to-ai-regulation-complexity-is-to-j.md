@@ -1,9 +1,9 @@
 ---
-title: "欧盟简化AI规则：监管延迟两年，明确禁止"脱衣"应用"
+title: "欧盟简化AI规则：监管延迟两年，明确禁止\"脱衣\"应用"
 date: "2026-05-07"
 category: "model-tracking"
 source_url: "https://the-decoder.com/europes-answer-to-ai-regulation-complexity-is-to-just-delay-most-of-it/"
-description: "欧盟通过"数字综合法案"，将高风险AI监管截止日期延至2027-2028年，放宽中小企业要求。明确禁止"脱衣"Nudification应用。深伪和AI生成内容标签要求仍将在2026年8月生效。"
+description: "欧盟通过\"数字综合法案\"，将高风险AI监管截止日期延至2027-2028年，放宽中小企业要求。明确禁止\"脱衣\"Nudification应用。深伪和AI生成内容标签要求仍将在2026年8月生效。"
 cover_image: "https://the-decoder.com/wp-content/uploads/2026/05/eu_ai_act_omnibus.png"
 is_featured: false
 ---
