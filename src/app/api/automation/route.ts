@@ -494,22 +494,20 @@ async function triggerNetlifyDeploy() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    let { llmConfig, dataSources, defaultCoverImage } = body;
+    let { dataSources, defaultCoverImage } = body;
 
-    // Use environment variables as fallback for server-side/automation use
-    // This allows scheduled tasks to work without passing config in request body
-    if (!llmConfig?.apiKey && process.env.AUTOMATION_LLM_API_KEY) {
-      llmConfig = {
-        provider: process.env.AUTOMATION_LLM_PROVIDER || "custom",
-        apiKey: process.env.AUTOMATION_LLM_API_KEY,
-        endpoint: process.env.AUTOMATION_LLM_ENDPOINT || "",
-        model: process.env.AUTOMATION_LLM_MODEL || "",
-      };
+    // ALWAYS use environment variables for API key - this is more secure
+    // API key is never sent from frontend or stored in localStorage
+    if (!process.env.AUTOMATION_LLM_API_KEY) {
+      return NextResponse.json({ error: "请先在环境变量中配置 AI API Key" }, { status: 400 });
     }
 
-    if (!llmConfig?.apiKey) {
-      return NextResponse.json({ error: "请先配置 AI API Key" }, { status: 400 });
-    }
+    const llmConfig = {
+      provider: process.env.AUTOMATION_LLM_PROVIDER || "custom",
+      apiKey: process.env.AUTOMATION_LLM_API_KEY,
+      endpoint: process.env.AUTOMATION_LLM_ENDPOINT || "",
+      model: process.env.AUTOMATION_LLM_MODEL || "",
+    };
 
     if (!dataSources || !Array.isArray(dataSources) || dataSources.length === 0) {
       return NextResponse.json({ error: "没有可用的数据源" }, { status: 400 });

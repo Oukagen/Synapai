@@ -2,11 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Key, Rss, Zap, Settings, Play, Pause, RefreshCw, Check, X, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Rss, Zap, Settings, Play, RefreshCw, Plus, Trash2 } from "lucide-react";
 
 interface ApiConfig {
   provider: string;  // openai, zhipu, deepseek, kimi, etc.
-  apiKey: string;
   endpoint?: string; // Custom endpoint for compatible APIs
   model?: string;    // Specific model name
 }
@@ -47,12 +46,9 @@ export default function AutomationPage() {
   const [activeTab, setActiveTab] = useState<"api" | "sources" | "schedule" | "prompt">("api");
   const [apiConfig, setApiConfig] = useState<ApiConfig>({
     provider: "openai",
-    apiKey: "",
     endpoint: "",
     model: "",
   });
-  const [testingKey, setTestingKey] = useState<string | null>(null);
-  const [testResult, setTestResult] = useState<{ key: string; success: boolean; message: string } | null>(null);
 
   const [dataSources, setDataSources] = useState<DataSource[]>([
     { id: "1", name: "BBC 科技", url: "https://feeds.bbci.co.uk/news/technology/rss.xml", type: "rss", category: "tech-giants", enabled: true },
@@ -89,16 +85,6 @@ export default function AutomationPage() {
 
   // Load saved configurations on mount
   useEffect(() => {
-    const savedApiConfig = localStorage.getItem("automation_api_config");
-    if (savedApiConfig) {
-      try {
-        const parsed = JSON.parse(savedApiConfig);
-        setApiConfig(parsed);
-      } catch (e) {
-        console.error("Failed to parse saved API config");
-      }
-    }
-
     const savedDataSources = localStorage.getItem("automation_data_sources");
     if (savedDataSources) {
       try {
@@ -123,30 +109,10 @@ export default function AutomationPage() {
     }
   }, []);
 
-  const handleTestApi = async () => {
-    if (!apiConfig.apiKey) return;
-
-    setTestingKey("api");
-    setTestResult(null);
-
-    // Simulate API test - in real implementation, call the actual API
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    const selectedProvider = llmProviders.find(p => p.id === apiConfig.provider);
-    const isValid = apiConfig.apiKey.length > 10;
-
-    setTestResult({
-      key: "api",
-      success: isValid,
-      message: isValid ? `${selectedProvider?.label} API 连接正常` : "API Key 格式似乎不正确",
-    });
-    setTestingKey(null);
-  };
-
   const handleSaveApiKeys = () => {
     const selectedProvider = llmProviders.find(p => p.id === apiConfig.provider);
     const configToSave = {
-      ...apiConfig,
+      provider: apiConfig.provider,
       endpoint: apiConfig.endpoint || selectedProvider?.endpoint,
       model: apiConfig.model || selectedProvider?.defaultModel,
     };
@@ -170,14 +136,9 @@ export default function AutomationPage() {
   };
 
   const handleTriggerManualUpdate = async () => {
-    if (!apiConfig.apiKey) {
-      alert("请先配置 AI 模型 API Key");
-      return;
-    }
-
     const selectedProvider = llmProviders.find(p => p.id === apiConfig.provider);
     const configToSave = {
-      ...apiConfig,
+      provider: apiConfig.provider,
       endpoint: apiConfig.endpoint || selectedProvider?.endpoint,
       model: apiConfig.model || selectedProvider?.defaultModel,
     };
@@ -333,35 +294,12 @@ export default function AutomationPage() {
               ))}
             </div>
 
-            {/* API Key Input */}
-            <div className="mb-4">
-              <label className="block text-xs text-[#A3A3A3] mb-2">API Key</label>
-              <div className="flex gap-3">
-                <input
-                  type="password"
-                  value={apiConfig.apiKey || ""}
-                  onChange={(e) => setApiConfig({ ...apiConfig, apiKey: e.target.value })}
-                  placeholder="输入 API Key"
-                  className="flex-1 h-10 px-3 bg-[#131313] border border-[#404040] text-white text-sm placeholder:text-[#525252] placeholder:font-normal focus:border-accent focus:outline-none transition-colors font-mono"
-                />
-                <button
-                  onClick={handleTestApi}
-                  disabled={testingKey === "api" || !apiConfig.apiKey}
-                  className="btn-ghost"
-                >
-                  {testingKey === "api" ? (
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                  ) : (
-                    "测试"
-                  )}
-                </button>
-              </div>
-              {testResult?.key === "api" && (
-                <p className={`text-xs mt-2 ${testResult.success ? "text-accent" : "text-[#E5484D]"}`}>
-                  {testResult.success ? <Check className="w-3 h-3 inline mr-1" /> : <X className="w-3 h-3 inline mr-1" />}
-                  {testResult.message}
-                </p>
-              )}
+            {/* API Key Info */}
+            <div className="mb-4 p-3 bg-[#1A1A1A] border border-[#262626] rounded">
+              <p className="text-xs text-[#A3A3A3] mb-1">API Key 配置方式</p>
+              <p className="text-xs text-[#737373]">
+                API Key 已移至服务器环境变量配置，请前往 Netlify 仪表板设置 <code className="text-accent">AUTOMATION_LLM_API_KEY</code> 等环境变量。
+              </p>
             </div>
 
             {/* Custom Endpoint (for custom provider) */}
