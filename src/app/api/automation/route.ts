@@ -485,6 +485,11 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     console.error("Automation error:", error);
-    return NextResponse.json({ error: error.message || "自动化更新失败" }, { status: 500 });
+    // Return 200 with error details instead of 500 to show results
+    return NextResponse.json({
+      success: false,
+      error: error.message || "自动化更新失败",
+      results
+    }, { status: 200 });
   }
 }

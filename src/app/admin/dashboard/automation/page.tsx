@@ -185,7 +185,8 @@ export default function AutomationPage() {
       const data = await res.json();
       console.log("Response:", data);
 
-      if (res.ok) {
+      // Show results regardless of HTTP status (API returns 200 even with errors)
+      if (res.ok || data.results) {
         // Show detailed results
         const successCount = data.results?.filter((r: any) => r.status === "success").length || 0;
         const failCount = data.results?.filter((r: any) => r.status === "error").length || 0;
