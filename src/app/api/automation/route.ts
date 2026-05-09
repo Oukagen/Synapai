@@ -256,6 +256,36 @@ function makeSlug(title: string): string {
     .slice(0, 50) || "article-" + Date.now();
 }
 
+// Generate cover image SVG
+function generateCoverSvg(title: string, slug: string): string {
+  const gradients = [
+    ["#ff6b6b", "#feca57", "#48dbfb", "#667eea", "#a855f7"],
+    ["#00d9ff", "#6365f1", "#a855f7", "#ec4899"],
+    ["#f59e0b", "#10b981", "#06b6d4"],
+    ["#fb923c", "#a855f7", "#ec4899", "#3b82f6"],
+    ["#3b82f6", "#10b981", "#eab308", "#f97316", "#ef4444"],
+  ];
+
+  const hash = slug.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  const colors = gradients[hash % gradients.length];
+
+  const keywords = title.match(/[a-zA-Z0-9]+/g)?.slice(0, 3).join(" ") || title.slice(0, 10);
+  const displayText = keywords.length > 15 ? keywords.slice(0, 15) + "..." : keywords;
+
+  const stops = colors.map((c, i) => `<stop offset="${(i * 100) / (colors.length - 1)}%" stop-color="${c}"/>`).join("");
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+    <defs>
+      <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">${stops}</linearGradient>
+    </defs>
+    <rect width="1200" height="630" fill="url(#bg)"/>
+    <text x="600" y="300" text-anchor="middle" fill="white" font-family="system-ui" font-size="72" font-weight="600">${displayText}</text>
+    <text x="600" y="380" text-anchor="middle" fill="white" font-family="system-ui" font-size="24" opacity="0.7">科技资讯</text>
+  </svg>`;
+
+  return "data:image/svg+xml;base64," + Buffer.from(svg, "utf8").toString("base64");
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -291,8 +321,8 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
-      // Process first 2 items only
-      for (const item of items.slice(0, 2)) {
+      // Process first 3 items
+      for (const item of items.slice(0, 3)) {
         try {
           // Check duplicate
           if (await articleExists(item.link)) {
@@ -316,6 +346,9 @@ export async function POST(request: NextRequest) {
             console.log("LLM failed, using fallback content");
           }
 
+          // Generate cover image SVG
+          const coverImage = generateCoverSvg(generated?.title || item.title, slug);
+
           // Save
           const saved = await saveArticle({
             title: generated?.title || item.title,
@@ -323,7 +356,7 @@ export async function POST(request: NextRequest) {
             category: source.category,
             source_url: item.link,
             description: generated?.description || item.description.slice(0, 200),
-            cover_image: "",
+            cover_image: coverImage,
             content: generated?.content || content.slice(0, 1000),
             slug,
           });
