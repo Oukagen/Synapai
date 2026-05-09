@@ -475,6 +475,22 @@ function regeneratePostsJson() {
   );
 }
 
+// Trigger Netlify deploy (for auto-deployment after generating new content)
+async function triggerNetlifyDeploy() {
+  const deployHook = process.env.NETLIFY_DEPLOY_HOOK;
+  if (!deployHook) {
+    console.log("[Deploy] No NETLIFY_DEPLOY_HOOK configured");
+    return;
+  }
+
+  try {
+    await fetch(deployHook, { method: "POST" });
+    console.log("[Deploy] Netlify deploy triggered successfully");
+  } catch (error) {
+    console.error("[Deploy] Failed to trigger Netlify deploy:", error);
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -592,10 +608,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Trigger Netlify deploy after successful automation
+    triggerNetlifyDeploy();
+
     return NextResponse.json({
       success: true,
       results,
-      message: `处理完成：成功 ${results.filter(r => r.status === "success").length} 篇，跳过 ${results.filter(r => r.status === "skipped").length} 篇，失败 ${results.filter(r => r.status === "error").length} 篇`
+      message: `处理完成：成功 ${results.filter(r => r.status === "success").length} 篇，跳过 ${results.filter(r => r.status === "skipped").length} 篇，失败 ${results.filter(r => r.status === "error").length} 篇（部署已触发）`
     });
   } catch (error: any) {
     console.error("Automation error:", error);
