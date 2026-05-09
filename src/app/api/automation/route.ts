@@ -489,7 +489,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: false,
       error: error.message || "自动化更新失败",
-      results
+      results: []
     }, { status: 200 });
   }
 }
